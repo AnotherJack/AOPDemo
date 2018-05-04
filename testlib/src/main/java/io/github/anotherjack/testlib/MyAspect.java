@@ -14,6 +14,7 @@ import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 
 import io.github.anotherjack.testlib.annotation.RequestPermissions;
@@ -51,8 +52,29 @@ public class MyAspect {
 //
 //    }
 
-    //任意注解有@RequestPermissions方法的调用
-    @Around("call(* *..*.*(..)) && @annotation(requestPermissions)")
+    //注解有RequestPermissions
+    @Pointcut("@annotation(requestPermissions)")
+    public void annotatedWithRequestPermissions(RequestPermissions requestPermissions){
+
+    }
+
+    //所有方法的call
+    @Pointcut("call(* *..*.*(..))")
+    public void anyCall(){
+
+    }
+
+    //上两个Pointcut的交集
+    @Pointcut("anyCall() && annotatedWithRequestPermissions(requestPermissions)")
+    public void requestPermissionsPointcut(RequestPermissions requestPermissions){
+
+    }
+
+    //三种方式都行
+    //任意注解有@RequestPermissions方法的调用（call）
+    @Around("anyCall() && annotatedWithRequestPermissions(requestPermissions)")
+//    @Around("requestPermissionsPointcut(requestPermissions)")
+//    @Around("call(* *..*.*(..)) && @annotation(requestPermissions)")
     public void requestPermissions(final ProceedingJoinPoint proceedingJoinPoint, RequestPermissions requestPermissions) throws Exception{
         Log.d(TAG,"----------request permission");
         String[] permissions = requestPermissions.value(); //获取到注解里的权限数组
